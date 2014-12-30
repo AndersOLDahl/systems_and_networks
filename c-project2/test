@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+
+my $SEMESTER = "cs3600f13";
+my $SOLDIR = "/course/$SEMESTER/code/solutions/c-project2/";
+
+if ($#ARGV < 0) {
+  error("Usage: ./test <problem ...>");
+}
+
+foreach $problem (@ARGV) {
+  if (! (-e $problem)) {
+    error("Unable to find problem '$problem'.");
+  }
+
+  if (! (-e "$SOLDIR$problem")) {
+    error("Unable to find reference solution to problem '$problem'.");
+  }
+
+  if ($problem eq "cp2-problem1") {
+    my @tries = ("45 9 1 3 11 101 4 67 1", "2 23 23 23 2 23 1 23 1", "0 0 0 11 1 112 4 11 0");
+    test($problem, \@tries);  
+  } elsif ($problem eq "cp2-problem2") {
+    my @tries = ("\"r 5\"",  "\"s 3\"", "\"a FOO 1 2 BAR\" \"r 0\" \"r 1\"", "\"a Mislove 1 100 Boston\" \"s 1\" \"s 11\" \"a Liu 1029 200 Brookline\" \"s 1\" \"s 2\" \"s 1029\" \"r 1\" \"s 1\"");
+    test($problem, \@tries);  
+  } elsif ($problem eq "cp2-problem3") {
+    my @tries = ("foo bar", "FOO bar", "FOO BAR", "fdjfidsojfs fd", "fo BAR", "123467890\{\}:\\>\\<?/.. foo");
+    test($problem, \@tries);  
+  } elsif ($problem eq "cp2-problem4") {
+    my @tries = ("foo bar", "FOO bar", "FOO BAR", "fdjfidsojfs fd", "fo BAR", "123467890\{\}:\\>\\<?/.. foo");
+    test($problem, \@tries);  
+  } else {
+    error("Unknown problem '$problem'.");
+  }
+}
+
+sub test {
+  my ($problem, $vals) = @_;
+
+  print "Testing $problem\n";
+
+  foreach $val (@{ $vals }) {
+    print pad("  Trying with './$problem $val'", 60);
+    my $test = `./$problem $val`;
+    my $real = `$SOLDIR$problem $val`;
+
+    if ($test eq $real) {
+      print "[PASS]\n";
+    } else {
+      print "[FAIL]\n";
+      print "    Expected output:\n$real\n    Received output:\n$test\n";
+      exit(-1);
+    }
+  }
+
+  print "Done testing $problem.\n\n";
+}
+
+sub error {
+  my ($msg) = @_;
+  print "ERROR: $msg\n";
+  exit(1);
+}
+
+sub pad {
+  my ($name, $len) = @_;
+  while (length($name) < $len) {
+    $name = "$name ";
+  }
+  if (length($name) > $len) {
+    $name = substr($name, 0, $len-3) . "...";
+  }
+  return $name;
+}
+

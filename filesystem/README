@@ -1,0 +1,35 @@
+We use 1 block for our vcb.
+We've setup our disk to be able to handle up to 100 files. 
+We do this using 100 blocks for our Directory Enteries.
+Our data blocks enumerate to 128 * the number of blocks not used by the vcb or de's divided by 129.
+The fat blocks take up the remaining blocks which is ceil(# of data blocks/128).
+
+example disk:
+size = 1000
+	  ______________________________________________
+# block   |0  |      1-100      | 101-107  |  108-999  |
+	  ----------------------------------------------
+block type|vcb|directory entries|fat blocks|data blocks|
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We chose our directory enteries to be of BLOCKSIZE since it is a quick and easy implementation with
+simple debuging.  We have not implemented a cache yet, since we are focusing first on functionality
+and then on optimization.  Our code is not as modular as we would like since we're in a function
+over form stage of development.
+
+Debugging this filesystem has been the hardest degubbing we have ever had to do in our lifes.
+3 Slip Days later trying to fix the last test to no avail. One change would fail other tests
+but no matter what we did the last one never passed (one time they all did for some buggy
+reason). We have difficulty debugging vfs_read and vfs_write idependently on very large inputs.
+Grasping what the offset and buffer meant for the read and write held us back since we focused
+too heavily on passing tests instead of clean and neat code. Will the final day approaching
+its end we hung up the towel on the last test to do some last minute code cleanup and organization.
+
+Our overall structure could have been much better in some of our loops since a lot of the
+code has adhoc parts used to debug and pass tests. Our implementation could have also been
+more organized but we focused on execution rather than form.
+
+Most of our major debugging was done through gdb, but we also provided error messages for
+failing functions. We tested against the test file to decifer most of our errors.
+
+We did not implement any extra features.

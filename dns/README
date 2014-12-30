@@ -1,0 +1,11 @@
+For this DNS Client we decided to make a struct to hold all of our data logically.
+Once this struct was setup correctly (with a SETUP one with default values hard-coded
+in) we then push our packet together in the right format to dump and send_to
+
+Our biggest challenge was the DNS pointers since they do not act the same as regular pointers.
+We abstracted our struct a little to hold a pointer to an answer struct so that a multitude of answers
+can be daisy chained onto it. Understanding how our structs then translated to the packets
+was an implementation and design challenge.
+
+We originally tried to take on the extra credit but we were short on time to implement it without
+destroying our code.

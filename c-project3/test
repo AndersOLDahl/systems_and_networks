@@ -1,0 +1,68 @@
+#!/usr/bin/perl
+
+my $SEMESTER = "cs3600f13";
+my $SOLDIR = "/course/$SEMESTER/code/solutions/c-project3/";
+
+if ($#ARGV < 0) {
+  error("Usage: ./test <problem ...>");
+}
+
+foreach $problem (@ARGV) {
+  if (! (-e $problem)) {
+    error("Unable to find problem '$problem'.");
+  }
+
+  if (! (-e "$SOLDIR$problem")) {
+    error("Unable to find reference solution to problem '$problem'.");
+  }
+
+  if ($problem eq "cp3-problem1") {
+    my @tries = ("0", "1", "-1", "15", "10", "-293", "2938", "14000008", "-2003985675");
+    test($problem, \@tries);  
+  } elsif ($problem eq "cp3-problem2") {
+    my @tries = ("\"a 90 foo\"", "\"r 89\"", "\"a 2 fods\" \"a 2 nfid\" \"r 2\" \"l 2\"", "\"r 3\" \"a 3 op\" \"l 3\" \"l 3\" \"r 3\"", "\"a 3 foo\" \"a 4 bar\" \"a 5 foo\" \"a 6 bar\" \"r 5\" \"l 102\"", "\"a 3 foo\" \"a 4 bar\" \"a 3 dfidfd\" \"a 100 dospd\" \"r 3\" \"l 3\" \"r 100\" \"r 4\" \"a 3 fdf\"");
+    test($problem, \@tries);  
+  } else {
+    error("Unknown problem '$problem'.");
+  }
+}
+
+sub test {
+  my ($problem, $vals) = @_;
+
+  print "Testing $problem\n";
+
+  foreach $val (@{ $vals }) {
+    print pad("  Trying with './$problem $val'", 60);
+    my $test = `./$problem $val`;
+    my $real = `$SOLDIR$problem $val`;
+
+    if ($test eq $real) {
+      print "[PASS]\n";
+    } else {
+      print "[FAIL]\n";
+      print "    Expected output:\n$real\n    Received output:\n$test\n";
+#      exit(-1);
+    }
+  }
+
+  print "Done testing $problem.\n\n";
+}
+
+sub error {
+  my ($msg) = @_;
+  print "ERROR: $msg\n";
+  exit(1);
+}
+
+sub pad {
+  my ($name, $len) = @_;
+  while (length($name) < $len) {
+    $name = "$name ";
+  }
+  if (length($name) > $len) {
+    $name = substr($name, 0, $len-3) . "...";
+  }
+  return $name;
+}
+

@@ -1,0 +1,20 @@
+Our send is split into 3 stages: load our window with packets, send the packets,
+and wait for the awks.  Our implementation was slow in loading the packets since
+we would move every element of the array by 1 instead of just adding one to the
+array and removing 1 when we received the appropriate awk.  This approach does
+work fairly well for large data since we can send the whole window without worrying
+about moving by 1. This approach can allow for a heavy overhead if we don't get an
+awk from one of the earlier packets in our window.
+
+One fatal flaw to our design is the chance of getting Denial of Serviced. If we keep
+getting hit with packets within 10ms of each other, we do not stop reading them.
+This seemed very out of the scope of the project so we did not bother implementing
+a solution.
+
+We also had trouble implementing the sliding window protocol. There was an issue
+related to our receiver not sending awks correctly.  It took us a while to figure
+out why our sliding window never worked.  Once this was remedied, we were able to move
+further into our project.
+
+Our nickname for this project was 'TCP Off by 1' which is not a city in Nevada
+but perfectly describes the bulk of our issues.

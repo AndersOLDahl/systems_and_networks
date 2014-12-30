@@ -1,0 +1,137 @@
+#!/usr/bin/perl
+
+use File::Temp qw(tempfile);
+
+my $SEMESTER = "cs3600f14";
+my $SOLDIR = "/course/$SEMESTER/code/solutions/project1/";
+my $SHELL = "3600sh";
+
+if (! (-e $SHELL)) {
+  error("Unable to find problem '$SHELL'.");
+}
+
+if (! (-e "$SOLDIR$SHELL")) {
+  print("$SOLDIR$SHELL");
+  error("Unable to find reference solution '$SHELL'.");
+}
+
+my $pattern = "/tmp/cs3600.project1.XXXXXX";
+my ($f1, $t1) = tempfile($pattern, UNLINK => 1); 
+my ($f2, $t2) = tempfile($pattern, UNLINK => 1); 
+my ($f3, $t3) = tempfile($pattern, UNLINK => 1); 
+my ($f4, $t4) = tempfile($pattern, UNLINK => 1); 
+
+my $total = 0;
+my $passed = 0;
+
+print "Milestone tests\n";
+my @tries = (	"ls",
+		"ls ~/tmp\ncat /etc/hostname",
+		"uname -a\ntime\n/bin/ls",
+		"stat /home\n",
+		"opdpfo\nmfdoimfo",
+		"ls a b c d e f g h i\n",
+		"pwd\nls\npwd\nls\nuname -a\nuname-a\nls\n",
+		"whoami\nwho am i\nwhoami who am i",
+                "ls /bin > $t1\ncat $t1\n\n",
+                "wc < $t1 > $t2\ncat $t2",
+                "ls /mfmfoifoi 2> $t1\ncat $t1");
+test($problem, \@tries);
+
+print "\nFinal project tests\n";
+my @tries = (	"ls foo\\ bar",
+		"ls \\\\baz\\ foo\\ bah\\\\\\ ",
+		"ls -altr a\\&b",
+		"ls -altr a>b b<a",
+		"ls -altr a\\tcad\n",
+		"ls -altr /etc &\n",
+		"ls -altr /bin > $t1\ncat $t1\nls -altr /bin > $t1\ncat $t1",
+                "ls -altr /bin < $t1 > $t2 2> $t3\ncat $t1\ncat $t2\ncat $t3",
+		"ls a b c d e f g h i j k\n\n\n\n",
+		"ls a b c d e f g h i j k l m n o p q r s t u v w x y z");
+test($problem, \@tries);
+
+print "\nStress tests\n";
+my @tries = (	"ls \\8",
+		"ls -al /bin        ",
+		"ls  -a     /bin",
+		"     ls -a        -l                                                       -t   -r         -n -o                     -i              -h             /bin",
+		"ls \\ \\\\ \\ \\a",
+		"ls\t-altr\t/etc",
+		"ls -altr /etc &",
+		"ls\t-altr /etc   &      ",
+		"ls & ls\n   \n\t\n",
+		"ls >",
+		"ls < /fdiononiono",
+		"ls < 2>",
+		"ls & < foo\n",
+		"ls -a < foo bar",
+		"./3600sh.c a b",
+		"fndsiofnsodfnsof",
+		"& & & ls");
+test($problem, \@tries);
+
+print "\nPassed $passed of $total tests.\n";
+
+sub test {
+  my ($problem, $vals) = @_;
+
+  foreach $val (@{ $vals }) {
+    $total ++;
+    my $pr = $val;
+    $pr =~ s/\n/\\n/g;
+    print pad("  Trying with script '$pr'", 60);
+
+    open (MYFILE, '> .data');
+    print MYFILE $val;
+    close(MYFILE);
+
+    system("./$SHELL < .data > .actual 2>&1");
+    system("$SOLDIR$SHELL < .data > .expected 2>&1");
+    my $diff = `diff .expected .actual | egrep "^([<>]|Binary)"`;
+    if ($diff) {
+      $diff = `diff -y -W 300 .expected .actual`;
+      `cp .expected .actual ~`;
+    }
+
+    `rm .actual .expected .data`;
+
+    if (! $diff) {
+      $passed++;
+      print "[PASS]\n";
+    } else {
+      print "[FAIL]\n";
+      print "    Command was:\n$pr\n    Diff in expected output:\n$diff\n";
+    }
+  }
+}
+
+sub error {
+  my ($msg) = @_;
+  print "ERROR: $msg\n";
+  exit(1);
+}
+
+sub pad {
+  my ($name, $len) = @_;
+  while (length($name) < $len) {
+    $name = "$name ";
+  }
+  if (length($name) > $len) {
+    $name = substr($name, 0, $len-3) . "...";
+  }
+  return $name;
+}
+
+sub random {
+  my ($len) = @_;
+
+  my @chars=('a'..'z','A'..'Z','0'..'9','_');
+  my $random_string;
+  foreach (1..$len) {
+    $random_string.=$chars[rand @chars];
+  }
+
+  return $random_string;
+}
+

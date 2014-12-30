@@ -1,0 +1,73 @@
+#!/usr/bin/perl
+
+my $SEMESTER = "cs3600f13";
+my $SOLDIR = "/course/$SEMESTER/code/solutions/c-project4/";
+
+if ($#ARGV < 0) {
+  error("Usage: ./test <problem ...>");
+}
+
+foreach $problem (@ARGV) {
+  if (! (-e $problem)) {
+    error("Unable to find problem '$problem'.");
+  }
+
+  if (! (-e "$SOLDIR$problem")) {
+    error("Unable to find reference solution to problem '$problem'.");
+  }
+
+  if ($problem eq "cp4-problem1") {
+    my @tries = ("foo bar", "FOO bar", "FOO BAR", "fdjfidsojfs fd", "fo BAR", "123467890\{\}:\\>\\<?/.. foo");
+    test($problem, \@tries);  
+  } elsif ($problem eq "cp4-problem2") {
+    my @tries = ("");
+    test($problem, \@tries);  
+  } elsif ($problem eq "cp4-problem3") {
+    my @tries = ("1 12 1", "9 10 -102", "0 9 18", "1 1 1 1 1 1 1 1 1 1 2 1");
+    test($problem, \@tries);  
+  } else {
+    error("Unknown problem '$problem'.");
+  }
+}
+
+sub test {
+  my ($problem, $vals) = @_;
+
+  print "Testing $problem\n";
+
+  foreach $val (@{ $vals }) {
+    print pad("  Trying with './$problem $val'", 60);
+
+    system("./$problem $val > .actual 2>&1");
+    system("$SOLDIR$problem $val > .expected 2>&1");
+    my $diff = `diff .expected .actual | egrep "^([<>]|Binary)"`;
+    `rm .actual .expected`;
+
+    if (! $diff) {
+      print "[PASS]\n";
+    } else {
+      print "[FAIL]\n";
+      print "    Diff in expected output:\n$diff";
+    }
+  }
+
+  print "Done testing $problem.\n\n";
+}
+
+sub error {
+  my ($msg) = @_;
+  print "ERROR: $msg\n";
+  exit(1);
+}
+
+sub pad {
+  my ($name, $len) = @_;
+  while (length($name) < $len) {
+    $name = "$name ";
+  }
+  if (length($name) > $len) {
+    $name = substr($name, 0, $len-3) . "...";
+  }
+  return $name;
+}
+
